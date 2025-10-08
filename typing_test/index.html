@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html ng-app="typingApp">
+<head>
+    <title>Real Words Typing Test</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="app.js"></script>
+</head>
+<body ng-controller="TypingController as tc" ng-keydown="tc.handleKey($event)" tabindex="0">
+    <div class="container">
+        <div class="header">
+            <h1>Typing Test</h1>
+            <div class="stats">
+                <span>WPM: {{tc.wpm}}</span>
+                <span>Accuracy: {{tc.accuracy}}%</span>
+                <span>Time: {{tc.time}}s</span>
+                <span>Duration:
+                    <select ng-model="tc.duration" ng-disabled="tc.isTesting">
+                        <option value="15">15s</option>
+                        <option value="30">30s</option>
+                        <option value="60" selected>60s</option>
+                    </select>
+                </span>
+
+                <button ng-click="tc.startTest()" ng-disabled="tc.isTesting">Start</button>
+            </div>
+        </div>
+        
+        <div class="typing-area">
+            <div class="words">
+                <span ng-repeat="word in tc.words track by $index"
+                      ng-class="{
+                        'current': $index === tc.currentWordIndex,
+                        'correct': word.status === 'correct',
+                        'incorrect': word.status === 'incorrect'
+                      }"
+                      ng-bind-html="tc.highlightCurrentChar(word, $index)">
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="modal" ng-show="tc.showResultsModal">
+      <div class="modal-content">
+        <h2>Test Finished!</h2>
+        <p>WPM: {{tc.wpm}}</p>
+        <p>Accuracy: {{tc.accuracy}}%</p>
+        <button ng-click="tc.closeModal()">Close</button>
+      </div>
+    </div>
+</body>
+</html>

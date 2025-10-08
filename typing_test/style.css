@@ -1,0 +1,148 @@
+body {
+    font-family: 'Courier New', monospace;
+    background: #1e1e1e;
+    margin: 0;
+    padding: 20px;
+    color: #e0e0e0;
+    outline: none;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.stats {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 16px;
+}
+
+button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+.typing-area {
+    margin-top: 20px;
+}
+
+.words {
+    font-size: 22px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    min-height: 120px;
+    padding: 15px;
+    background: #333;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.words span {
+    margin-right: 8px;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.words span.current {
+    position: relative;
+}
+
+.words span .current-char {
+    border-bottom: 2px solid #4CAF50;
+    animation: blink 1s infinite;
+}
+
+.words span .correct-char {
+    color: #4CAF50;
+}
+
+.words span .incorrect-char {
+    color: #f44336;
+    text-decoration: underline;
+}
+
+.words span.correct {
+    color: #4CAF50;
+}
+
+.words span.incorrect {
+    color: #f44336;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(30, 30, 30, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #2a2a2a;
+    padding: 30px 40px;
+    border-radius: 8px;
+    text-align: center;
+    color: #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+}
+
+.modal-content button {
+    margin-top: 20px;
+    background: #4CAF50;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.modal-content button:hover {
+    background: #45a049;
+}

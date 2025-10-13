@@ -244,14 +244,34 @@ angular.module('typingApp', [])
             timestamp: new Date().toISOString()
         };
 
-        $http.post(vm.googleScriptUrl, data)
-            .then(function(response) {
-                vm.saveStatus = 'success';
-            })
-            .catch(function(error) {
-                console.error('Error saving to Google Sheets:', error);
-                vm.saveStatus = 'error';
-            });
+        console.log('Sending data to Google Sheets:', data);
+        console.log('URL:', vm.googleScriptUrl);
+
+        // Use fetch API instead of $http for better CORS handling
+        fetch(vm.googleScriptUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            console.log('Response received:', response);
+            vm.saveStatus = 'success';
+            // Trigger Angular digest cycle
+            if (!vm.$$phase) {
+                vm.$apply();
+            }
+        })
+        .catch(function(error) {
+            console.error('Error saving to Google Sheets:', error);
+            vm.saveStatus = 'error';
+            // Trigger Angular digest cycle
+            if (!vm.$$phase) {
+                vm.$apply();
+            }
+        });
     }
 
     vm.closeModal = function() {

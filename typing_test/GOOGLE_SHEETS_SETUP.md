@@ -32,6 +32,28 @@ function doPost(e) {
     var timestamp = new Date(data.timestamp);
     var formattedTime = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
 
+    // Check for duplicate entries (same team, WPM, accuracy within last 5 seconds)
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      var lastEntry = sheet.getRange(lastRow, 1, 1, 4).getValues()[0];
+      var lastTeam = lastEntry[0];
+      var lastWPM = lastEntry[1];
+      var lastAccuracy = parseInt(lastEntry[2]); // Remove % if exists
+      var lastTime = new Date(lastEntry[3]);
+
+      var timeDiff = Math.abs(timestamp - lastTime) / 1000; // seconds
+
+      // If duplicate (same data within 5 seconds), don't add
+      if (lastTeam === data.teamName &&
+          lastWPM === data.wpm &&
+          lastAccuracy === data.accuracy &&
+          timeDiff < 5) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: 'duplicate' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
     // Append the data to the sheet
     sheet.appendRow([
       data.teamName,
@@ -137,6 +159,33 @@ const APP_CONFIG = {
 - Click **Executions** (clock icon) on the left
 - Check recent execution logs for error details
 
+## Step 6: Protect Your Spreadsheet (IMPORTANT!)
+
+To prevent users from editing or viewing the spreadsheet directly:
+
+### Option 1: Keep the Spreadsheet Private (Recommended)
+1. **Do NOT share the Google Sheet link with anyone**
+2. Only share your Vercel app URL
+3. The Google Apps Script can write to the sheet even though users can't access it
+4. Only you (the sheet owner) can view the results
+
+### Option 2: Share View-Only Access (If you want others to see results)
+1. In your Google Sheet, click **Share** (top right)
+2. Click **Change to anyone with the link**
+3. Set permissions to **Viewer** (not Editor!)
+4. Click **Copy link**
+5. Share this link separately from your typing test app
+
+### Option 3: Protect the Sheet from Edits
+1. Select all cells (click the square at top-left corner)
+2. Go to **Data > Protect sheets and ranges**
+3. Click **Set permissions**
+4. Select **Restrict who can edit this range**
+5. Choose **Only you**
+6. Click **Done**
+
+**Important**: Never put the Google Sheet URL in your typing test app. The Apps Script handles all data submission securely.
+
 ## Optional: Format Your Sheet
 
 To make your results look better:
@@ -144,10 +193,29 @@ To make your results look better:
 2. Freeze the first row: **View > Freeze > 1 row**
 3. Add alternating colors: **Format > Alternating colors**
 4. Auto-resize columns: Select all columns, then **Format > Resize columns > Fit to data**
+5. Sort by WPM: Select data range, **Data > Sort range > Sort by column B (WPM), Z→A**
 
-## Security Note
+## Security Best Practices
 
-This setup allows anyone with your app URL to submit data to your sheet. For production use, consider:
-- Adding authentication to verify legitimate submissions
-- Rate limiting to prevent spam
-- Adding data validation in the Apps Script
+✅ **DO:**
+- Keep your Google Sheet private (don't share the link publicly)
+- Only share your Vercel typing test app URL
+- Protect sheet ranges from editing
+- Regularly review the data for spam/invalid entries
+- Consider making a copy/backup of important data
+
+❌ **DON'T:**
+- Share the Google Sheet URL publicly
+- Put the Google Sheet URL in your app code
+- Give "Editor" permissions to others
+- Share the Google Apps Script Web App URL (keep it in config.js only)
+
+## How It Works Securely
+
+1. Users access your Vercel typing test app
+2. They enter team name and complete the test
+3. The app sends data to Google Apps Script (via the Web App URL)
+4. Google Apps Script authenticates as YOU and writes to YOUR sheet
+5. Users never see or access your Google Sheet directly
+
+This way, only authorized writes happen through the script, but users can't view or edit the sheet!

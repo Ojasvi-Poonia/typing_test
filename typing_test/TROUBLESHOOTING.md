@@ -159,10 +159,40 @@ When working correctly, you should see:
 - ✅ Apps Script Executions show successful runs
 - ✅ New rows appear in your Google Sheet immediately after completing tests
 
-### Security Note
+### Security Notes
 
-The current setup allows anyone to submit data. For production use:
-- Consider adding a secret key that must be included in requests
-- Add rate limiting in the Apps Script
-- Validate data before inserting
-- Use a separate sheet for test vs production data
+#### Protecting Your Spreadsheet
+- **Never share the Google Sheet URL** with users - keep it private!
+- Only share your Vercel typing test app URL
+- Users don't need access to the sheet - the script handles everything
+- The Apps Script runs as you and can write to your private sheet
+
+#### Preventing Data Tampering
+The current setup allows anyone with the app URL to submit data. To add more security:
+
+1. **Add a secret key validation** in Apps Script:
+```javascript
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+
+  // Add secret key validation
+  if (data.secretKey !== 'YOUR_SECRET_KEY_HERE') {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Unauthorized'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Continue with normal processing...
+}
+```
+
+2. **Add rate limiting** - Track IP addresses or timestamps to prevent spam
+
+3. **Validate data** - Check ranges (e.g., WPM between 0-200, accuracy 0-100)
+
+4. **Use separate sheets** for test data vs production data
+
+5. **Protect the sheet ranges**:
+   - In Google Sheets: Data > Protect sheets and ranges
+   - Set to "Only you" can edit

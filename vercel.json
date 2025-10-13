@@ -1,5 +1,15 @@
 {
-  "buildCommand": null,
-  "outputDirectory": "typing_test",
-  "installCommand": null
+  "version": 2,
+  "builds": [
+    {
+      "src": "typing_test/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/typing_test/$1"
+    }
+  ]
 }

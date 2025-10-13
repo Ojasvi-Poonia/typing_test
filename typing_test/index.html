@@ -9,23 +9,25 @@
 <body ng-controller="TypingController as tc" ng-keydown="tc.handleKey($event)" tabindex="0">
     <div class="container">
         <div class="header">
-            <h1>Typing Test</h1>
+            <h1>⚔️ Hero's Typing Quest </h1>
             <div class="stats">
                 <span>WPM: {{tc.wpm}}</span>
                 <span>Accuracy: {{tc.accuracy}}%</span>
                 <span>Time: {{tc.time}}s</span>
                 <span>Duration:
-                    <select ng-model="tc.duration" ng-disabled="tc.isTesting">
+                    <select ng-model="tc.duration" ng-disabled="tc.isTesting || tc.testCompleted">
                         <option value="15">15s</option>
                         <option value="30">30s</option>
                         <option value="60" selected>60s</option>
                     </select>
                 </span>
 
-                <button ng-click="tc.startTest()" ng-disabled="tc.isTesting">Start</button>
+                <button ng-click="tc.startTest()" ng-disabled="tc.isTesting || tc.testCompleted">
+                    {{tc.testCompleted ? 'Quest Complete' : 'Begin Quest'}}
+                </button>
             </div>
         </div>
-        
+
         <div class="typing-area">
             <div class="words">
                 <span ng-repeat="word in tc.words track by $index"
@@ -40,13 +42,21 @@
         </div>
     </div>
 
-    <!-- Results Modal -->
+    <!-- Thank You Modal -->
     <div class="modal" ng-show="tc.showResultsModal">
       <div class="modal-content">
-        <h2>Test Finished!</h2>
-        <p>WPM: {{tc.wpm}}</p>
-        <p>Accuracy: {{tc.accuracy}}%</p>
-        <button ng-click="tc.closeModal()">Close</button>
+        <div class="trident">🔱</div>
+        <h2>Quest Complete!</h2>
+        <div class="final-stats">
+          <p>⚡ Words Per Minute: {{tc.wpm}}</p>
+          <p>Accuracy: {{tc.accuracy}}%</p>
+        </div>
+        <p class="thank-you-message">
+          May the gods of Olympus smile upon your typing prowess, hero!
+        </p>
+        <p class="thank-you-message" style="font-size: 0.9em; margin-top: 20px;">
+          Your results have been recorded in the Oracle's scrolls.
+        </p>
       </div>
     </div>
 </body>

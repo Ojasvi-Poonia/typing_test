@@ -3,13 +3,13 @@ angular.module('typingApp', [])
     const vm = this;
 
     vm.words = [];
-    vm.englishWords = [];
     vm.currentWordIndex = 0;
     vm.currentChar = -1;
     vm.isTesting = false;
     vm.time = 0;
     vm.wpm = 0;
     vm.accuracy = 100;
+    vm.testCompleted = false; // Track if test has been completed (one-time only)
 
     vm.correctChars = 0;      // for WPM calculation
     vm.totalChars = 0;        // total chars in test for WPM
@@ -19,28 +19,27 @@ angular.module('typingApp', [])
 
     vm.timer = null;
     vm.showResultsModal = false;
+    vm.duration = 60; // Default duration
 
-    // Load English words from words.json
-    $http.get('words.json').then(response => {
-        vm.englishWords = response.data.commonWords;
-    });
-
-    function generateRandomWord() {
-        const list = vm.englishWords;
-        return list.length > 0
-            ? list[Math.floor(Math.random() * list.length)]
-            : 'loading';
-    }
+    // Fixed paragraph for competition fairness
+    const fixedParagraph = "The quick brown fox jumps over the lazy dog near the riverbank where children play and birds sing their melodious songs throughout the warm sunny afternoon while gentle breezes rustle through the leaves of ancient oak trees that have stood for generations providing shade and shelter to countless creatures both great and small in this peaceful corner of the world where time seems to slow down and worries fade away into the distance like clouds drifting across an endless sky";
 
     vm.startTest = function() {
+        // Prevent starting if test is already completed
+        if (vm.testCompleted) {
+            return;
+        }
+
         vm.words = [];
-        for (let i = 0; i < 50; i++) {
+        // Split fixed paragraph into words
+        const paragraphWords = fixedParagraph.split(' ');
+        paragraphWords.forEach(word => {
             vm.words.push({
-                text: generateRandomWord(),
+                text: word,
                 typed: '',
                 status: 'pending'
             });
-        }
+        });
 
         vm.isTesting = true;
         vm.currentWordIndex = 0;
@@ -94,17 +93,23 @@ angular.module('typingApp', [])
             return;
         }
 
-        // Space key pressed - counts as a typed character (space char)
-        if (event.key === " " && vm.currentChar >= 0) {
+        // Space key pressed - moves to next word (like Monkeytype)
+        if (event.key === " ") {
+            event.preventDefault();
+
+            // If we haven't started typing the word yet, don't do anything
+            if (wordObj.typed.length === 0) {
+                return;
+            }
+
+            // Mark word as correct or incorrect
             vm.totalTypedChars++; // count space keystroke
-            // Space char should be correct if it's a space between words
-            vm.correctTypedChars++; // space is always correct at this position
+            vm.correctTypedChars++; // space itself is always correct
 
             wordObj.status = wordObj.typed === word ? 'correct' : 'incorrect';
-
-            // Count correct chars for WPM
             countCorrectChars(wordObj);
 
+            // Move to next word
             vm.currentWordIndex++;
             vm.currentChar = -1;
 
@@ -112,7 +117,7 @@ angular.module('typingApp', [])
                 endTest();
                 showResultsPopup();
             }
-            event.preventDefault();
+
             return;
         }
 
@@ -129,19 +134,7 @@ angular.module('typingApp', [])
                 vm.correctTypedChars++;
             }
 
-            // If word finished typing
-            if (vm.currentChar === word.length - 1) {
-                wordObj.status = wordObj.typed === word ? 'correct' : 'incorrect';
-                countCorrectChars(wordObj);
-
-                vm.currentWordIndex++;
-                vm.currentChar = -1;
-
-                if (vm.currentWordIndex >= vm.words.length) {
-                    endTest();
-                    showResultsPopup();
-                }
-            }
+            // Don't auto-advance - user must press space
         }
     };
 
@@ -159,16 +152,35 @@ angular.module('typingApp', [])
         let html = '';
         const typed = word.typed || '';
         const original = word.text;
+        const isCurrentWord = index === vm.currentWordIndex;
 
+        // Show all characters of the word
         for (let i = 0; i < original.length; i++) {
             if (i < typed.length) {
-                const cls = typed[i] === original[i] ? 'correct-char' : 'incorrect-char';
-                html += `<span class="${cls}">${original[i]}</span>`;
-            } else if (i === typed.length && index === vm.currentWordIndex) {
+                const typedChar = typed[i];
+                const originalChar = original[i];
+                const cls = typedChar === originalChar ? 'correct-char' : 'incorrect-char';
+                html += `<span class="${cls}">${originalChar}</span>`;
+            } else if (i === typed.length && isCurrentWord) {
+                // Add cursor class to the next character to be typed
                 html += `<span class="current-char">${original[i]}</span>`;
             } else {
                 html += original[i];
             }
+        }
+
+        // If typed more than original (extra characters)
+        if (typed.length > original.length) {
+            for (let i = original.length; i < typed.length; i++) {
+                const typedChar = typed[i];
+                const addCursor = (i === typed.length - 1) && isCurrentWord ? ' current-char' : '';
+                html += `<span class="incorrect-char${addCursor}">${typedChar}</span>`;
+            }
+        }
+
+        // If we've typed all characters and still on this word, show cursor at the end
+        if (typed.length === original.length && isCurrentWord) {
+            html += `<span class="cursor-end"></span>`;
         }
 
         return $sce.trustAsHtml(html);
@@ -190,6 +202,7 @@ angular.module('typingApp', [])
     function endTest() {
         if (vm.timer) $interval.cancel(vm.timer);
         vm.isTesting = false;
+        vm.testCompleted = true; // Mark test as completed (one-time only)
     }
 
     function showResultsPopup() {
@@ -197,6 +210,7 @@ angular.module('typingApp', [])
     }
 
     vm.closeModal = function() {
-        vm.showResultsModal = false;
+        // Do not allow closing the modal - test is permanently complete
+        // vm.showResultsModal = false;
     };
 });

@@ -1,8 +1,0 @@
-{
-  "name": "typing-test",
-  "version": "1.0.0",
-  "description": "A typing speed test application",
-  "scripts": {
-    "build": "echo 'No build needed for static site'"
-  }
-}

@@ -24,8 +24,8 @@ angular.module('typingApp', [])
     vm.saveStatus = ''; // 'saving', 'success', 'error'
     vm.duration = 30; // Fixed to 30 seconds
 
-    // Google Apps Script Web App URL (you'll need to replace this with your actual URL)
-    vm.googleScriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+    // Google Apps Script Web App URL (loaded from config.js)
+    vm.googleScriptUrl = APP_CONFIG.googleScriptUrl;
 
     // Fixed paragraph for competition fairness
     const fixedParagraph = "The quick brown fox jumps over the lazy dog near the riverbank where children play and birds sing their melodious songs throughout the warm sunny afternoon while gentle breezes rustle through the leaves of ancient oak trees that have stood for generations providing shade and shelter to countless creatures both great and small in this peaceful corner of the world where time seems to slow down and worries fade away into the distance like clouds drifting across an endless sky";

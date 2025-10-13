@@ -73,27 +73,52 @@ function doPost(e) {
    - Click **Allow**
 6. **IMPORTANT**: Copy the Web App URL that appears (it looks like: `https://script.google.com/macros/s/AKfycby.../exec`)
 
-## Step 4: Update Your Typing Test App
+## Step 4: Update Your Typing Test App Configuration
 
-1. Open the `app.js` file in your typing test project
-2. Find this line (around line 28):
-   ```javascript
-   vm.googleScriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
-   ```
-3. Replace `'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'` with the Web App URL you copied
-4. Save the file
+### Option A: For Vercel Deployment (Recommended)
 
-Example:
+1. After you get your Web App URL, you have two options:
+
+   **Option 1: Update via GitHub (Easier)**
+   1. Go to your GitHub repository
+   2. Click on the `config.js` file
+   3. Click the pencil icon (Edit)
+   4. Replace `'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'` with your actual URL
+   5. Commit the changes
+   6. Vercel will automatically redeploy
+
+   **Option 2: Update Locally**
+   1. Open the `config.js` file in your project
+   2. Replace `'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'` with your actual URL
+   3. Save the file
+   4. Commit and push:
+      ```bash
+      git add config.js
+      git commit -m "Add Google Sheets URL"
+      git push
+      ```
+   5. Vercel will automatically redeploy
+
+Example `config.js`:
 ```javascript
-vm.googleScriptUrl = 'https://script.google.com/macros/s/AKfycby.../exec';
+const APP_CONFIG = {
+    googleScriptUrl: 'https://script.google.com/macros/s/AKfycby.../exec'
+};
 ```
+
+### Option B: For Local Testing
+
+1. Open the `config.js` file
+2. Replace the URL
+3. Open `index.html` in your browser
 
 ## Step 5: Test It Out
 
-1. Deploy your typing test app to Vercel (or test locally)
-2. Enter a team name
-3. Complete the typing test
-4. Check your Google Sheet - you should see a new row with the results!
+1. Once Vercel redeploys (takes about 1-2 minutes), visit your app
+2. Click "Begin Quest"
+3. Enter a team name
+4. Complete the 30-second typing test
+5. Check your Google Sheet - you should see a new row with the results!
 
 ## Troubleshooting
 

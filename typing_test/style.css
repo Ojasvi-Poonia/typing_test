@@ -382,3 +382,35 @@ select:hover {
     margin-bottom: 20px;
     text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
 }
+
+/* Team Name Input Styles */
+.team-name-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 15px 20px;
+    font-size: 1.2em;
+    font-family: 'Crimson Text', serif;
+    background: rgba(10, 24, 40, 0.7);
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    border-radius: 8px;
+    color: #f4e4c1;
+    outline: none;
+    margin: 20px 0;
+    transition: all 0.3s ease;
+}
+
+.team-name-input:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    background: rgba(10, 24, 40, 0.9);
+}
+
+.team-name-input::placeholder {
+    color: rgba(201, 185, 136, 0.5);
+}
+
+.submit-team-btn {
+    margin-top: 20px;
+    font-size: 1.1em;
+    padding: 15px 40px;
+}

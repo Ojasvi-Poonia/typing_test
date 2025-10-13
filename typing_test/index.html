@@ -14,15 +14,7 @@
                 <span>WPM: {{tc.wpm}}</span>
                 <span>Accuracy: {{tc.accuracy}}%</span>
                 <span>Time: {{tc.time}}s</span>
-                <span>Duration:
-                    <select ng-model="tc.duration" ng-disabled="tc.isTesting || tc.testCompleted">
-                        <option value="15">15s</option>
-                        <option value="30">30s</option>
-                        <option value="60" selected>60s</option>
-                    </select>
-                </span>
-
-                <button ng-click="tc.startTest()" ng-disabled="tc.isTesting || tc.testCompleted">
+                <button ng-click="tc.showTeamNamePrompt()" ng-disabled="tc.isTesting || tc.testCompleted">
                     {{tc.testCompleted ? 'Quest Complete' : 'Begin Quest'}}
                 </button>
             </div>
@@ -42,20 +34,43 @@
         </div>
     </div>
 
+    <!-- Team Name Input Modal -->
+    <div class="modal" ng-show="tc.showTeamModal">
+      <div class="modal-content">
+        <div class="trident">⚔️</div>
+        <h2>Enter Your Team Name</h2>
+        <p style="font-size: 0.9em; margin-bottom: 20px;">Your quest will last 30 seconds</p>
+        <input type="text"
+               ng-model="tc.teamName"
+               placeholder="Team Name"
+               class="team-name-input"
+               ng-keypress="tc.handleTeamNameKeypress($event)"
+               autofocus>
+        <button ng-click="tc.startTestWithTeam()"
+                ng-disabled="!tc.teamName || tc.teamName.trim() === ''"
+                class="submit-team-btn">
+          Begin Quest
+        </button>
+      </div>
+    </div>
+
     <!-- Thank You Modal -->
     <div class="modal" ng-show="tc.showResultsModal">
       <div class="modal-content">
         <div class="trident">🔱</div>
         <h2>Quest Complete!</h2>
         <div class="final-stats">
+          <p><strong>Team:</strong> {{tc.teamName}}</p>
           <p>⚡ Words Per Minute: {{tc.wpm}}</p>
-          <p>Accuracy: {{tc.accuracy}}%</p>
+          <p>🎯 Accuracy: {{tc.accuracy}}%</p>
         </div>
         <p class="thank-you-message">
           May the gods of Olympus smile upon your typing prowess, hero!
         </p>
         <p class="thank-you-message" style="font-size: 0.9em; margin-top: 20px;">
-          Your results have been recorded in the Oracle's scrolls.
+          <span ng-show="tc.saveStatus === 'saving'">📜 Recording in the Oracle's scrolls...</span>
+          <span ng-show="tc.saveStatus === 'success'">✅ Your results have been recorded in the Oracle's scrolls!</span>
+          <span ng-show="tc.saveStatus === 'error'">⚠️ Could not save to Oracle's scrolls, but your glory remains!</span>
         </p>
       </div>
     </div>

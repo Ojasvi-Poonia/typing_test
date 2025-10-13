@@ -19,10 +19,34 @@ angular.module('typingApp', [])
 
     vm.timer = null;
     vm.showResultsModal = false;
-    vm.duration = 60; // Default duration
+    vm.showTeamModal = false;
+    vm.teamName = '';
+    vm.saveStatus = ''; // 'saving', 'success', 'error'
+    vm.duration = 30; // Fixed to 30 seconds
+
+    // Google Apps Script Web App URL (you'll need to replace this with your actual URL)
+    vm.googleScriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
 
     // Fixed paragraph for competition fairness
     const fixedParagraph = "The quick brown fox jumps over the lazy dog near the riverbank where children play and birds sing their melodious songs throughout the warm sunny afternoon while gentle breezes rustle through the leaves of ancient oak trees that have stood for generations providing shade and shelter to countless creatures both great and small in this peaceful corner of the world where time seems to slow down and worries fade away into the distance like clouds drifting across an endless sky";
+
+    vm.showTeamNamePrompt = function() {
+        vm.showTeamModal = true;
+    };
+
+    vm.handleTeamNameKeypress = function(event) {
+        if (event.key === 'Enter' && vm.teamName && vm.teamName.trim() !== '') {
+            vm.startTestWithTeam();
+        }
+    };
+
+    vm.startTestWithTeam = function() {
+        if (!vm.teamName || vm.teamName.trim() === '') {
+            return;
+        }
+        vm.showTeamModal = false;
+        vm.startTest();
+    };
 
     vm.startTest = function() {
         // Prevent starting if test is already completed
@@ -207,6 +231,27 @@ angular.module('typingApp', [])
 
     function showResultsPopup() {
         vm.showResultsModal = true;
+        saveResultsToGoogleSheets();
+    }
+
+    function saveResultsToGoogleSheets() {
+        vm.saveStatus = 'saving';
+
+        const data = {
+            teamName: vm.teamName,
+            wpm: vm.wpm,
+            accuracy: vm.accuracy,
+            timestamp: new Date().toISOString()
+        };
+
+        $http.post(vm.googleScriptUrl, data)
+            .then(function(response) {
+                vm.saveStatus = 'success';
+            })
+            .catch(function(error) {
+                console.error('Error saving to Google Sheets:', error);
+                vm.saveStatus = 'error';
+            });
     }
 
     vm.closeModal = function() {

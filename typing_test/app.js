@@ -3,6 +3,7 @@ angular.module('typingApp', [])
     const vm = this;
 
     vm.words = [];
+    vm.allWords = []; // Store all words for infinite scrolling
     vm.currentWordIndex = 0;
     vm.currentChar = -1;
     vm.isTesting = false;
@@ -23,6 +24,7 @@ angular.module('typingApp', [])
     vm.teamName = '';
     vm.saveStatus = ''; // 'saving', 'success', 'error'
     vm.duration = 60; // Fixed to 60 seconds
+    vm.visibleWordCount = 30; // Number of words to show at once
 
     // Google Apps Script Web App URL (loaded from config.js)
     vm.googleScriptUrl = APP_CONFIG.googleScriptUrl;
@@ -54,19 +56,23 @@ angular.module('typingApp', [])
             return;
         }
 
+        vm.allWords = [];
         vm.words = [];
-        // Split fixed paragraph into words and repeat it 5 times for looping
+        // Split fixed paragraph into words and prepare infinite content
         const paragraphWords = fixedParagraph.split(' ');
-        // Repeat the paragraph multiple times to ensure infinite content
-        for (let i = 0; i < 5; i++) {
+        // Create a large pool of words
+        for (let i = 0; i < 10; i++) {
             paragraphWords.forEach(word => {
-                vm.words.push({
+                vm.allWords.push({
                     text: word,
                     typed: '',
                     status: 'pending'
                 });
             });
         }
+
+        // Initially show only first set of words
+        vm.words = vm.allWords.slice(0, vm.visibleWordCount);
 
         vm.isTesting = true;
         vm.currentWordIndex = 0;
@@ -82,8 +88,8 @@ angular.module('typingApp', [])
         vm.showResultsModal = false;
 
         // Count total chars for WPM calculation (including spaces between words)
-        vm.words.forEach(word => vm.totalChars += word.text.length);
-        vm.totalChars += vm.words.length - 1; // spaces between words count as chars
+        vm.allWords.forEach(word => vm.totalChars += word.text.length);
+        vm.totalChars += vm.allWords.length - 1; // spaces between words count as chars
 
         if (vm.timer) $interval.cancel(vm.timer);
         vm.timer = $interval(() => {
@@ -140,19 +146,28 @@ angular.module('typingApp', [])
             vm.currentWordIndex++;
             vm.currentChar = -1;
 
-            // Add more words dynamically if approaching the end (infinite loop)
-            if (vm.currentWordIndex >= vm.words.length - 50) {
-                const paragraphWords = fixedParagraph.split(' ');
-                paragraphWords.forEach(word => {
-                    vm.words.push({
-                        text: word,
-                        typed: '',
-                        status: 'pending'
+            // Update visible words - remove completed words from beginning, add new ones at end
+            const wordsToShow = 10; // How many words ahead to keep visible
+            if (vm.currentWordIndex > wordsToShow) {
+                const startIndex = vm.currentWordIndex - wordsToShow;
+                const endIndex = Math.min(vm.currentWordIndex + vm.visibleWordCount, vm.allWords.length);
+
+                // Check if we need more words in the pool
+                if (endIndex >= vm.allWords.length - 50) {
+                    const paragraphWords = fixedParagraph.split(' ');
+                    paragraphWords.forEach(word => {
+                        vm.allWords.push({
+                            text: word,
+                            typed: '',
+                            status: 'pending'
+                        });
                     });
-                });
-                // Update total chars count
-                paragraphWords.forEach(word => vm.totalChars += word.text.length);
-                vm.totalChars += paragraphWords.length; // spaces between words
+                    // Update total chars count
+                    paragraphWords.forEach(word => vm.totalChars += word.text.length);
+                    vm.totalChars += paragraphWords.length;
+                }
+
+                vm.words = vm.allWords.slice(startIndex, endIndex);
             }
 
             return;
@@ -184,12 +199,17 @@ angular.module('typingApp', [])
     }
 
     vm.highlightCurrentChar = function(word, index) {
-        if (index > vm.currentWordIndex) return $sce.trustAsHtml(word.text);
+        // Calculate the actual index in allWords array
+        const wordsToShow = 10;
+        const startIndex = vm.currentWordIndex > wordsToShow ? vm.currentWordIndex - wordsToShow : 0;
+        const actualIndex = startIndex + index;
+
+        if (actualIndex > vm.currentWordIndex) return $sce.trustAsHtml(word.text);
 
         let html = '';
         const typed = word.typed || '';
         const original = word.text;
-        const isCurrentWord = index === vm.currentWordIndex;
+        const isCurrentWord = actualIndex === vm.currentWordIndex;
 
         // Show all characters of the word
         for (let i = 0; i < original.length; i++) {

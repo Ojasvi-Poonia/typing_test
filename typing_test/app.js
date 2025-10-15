@@ -5,6 +5,7 @@ angular.module('typingApp', [])
     vm.words = [];
     vm.allWords = []; // Store all words for infinite scrolling
     vm.currentWordIndex = 0;
+    vm.visibleStartIndex = 0; // Track where visible window starts in allWords
     vm.currentChar = -1;
     vm.isTesting = false;
     vm.time = 0;
@@ -76,6 +77,7 @@ angular.module('typingApp', [])
 
         vm.isTesting = true;
         vm.currentWordIndex = 0;
+        vm.visibleStartIndex = 0;
         vm.currentChar = -1;
         vm.time = 0;
         vm.wpm = 0;
@@ -107,7 +109,11 @@ angular.module('typingApp', [])
     vm.handleKey = function(event) {
         if (!vm.isTesting) return;
 
-        const wordObj = vm.words[vm.currentWordIndex];
+        // Calculate the correct index in the visible words array
+        const visibleIndex = vm.currentWordIndex - vm.visibleStartIndex;
+        if (visibleIndex < 0 || visibleIndex >= vm.words.length) return;
+
+        const wordObj = vm.words[visibleIndex];
         const word = wordObj.text;
 
         if (event.key === "Backspace") {
@@ -117,10 +123,13 @@ angular.module('typingApp', [])
                 vm.currentChar--;
             } else if (vm.currentWordIndex > 0) {
                 vm.currentWordIndex--;
-                const prevWord = vm.words[vm.currentWordIndex];
-                vm.currentChar = prevWord.typed.length - 1;
-                prevWord.status = 'pending';
-                prevWord.typed = prevWord.typed.slice(0, -1);
+                const prevVisibleIndex = vm.currentWordIndex - vm.visibleStartIndex;
+                if (prevVisibleIndex >= 0 && prevVisibleIndex < vm.words.length) {
+                    const prevWord = vm.words[prevVisibleIndex];
+                    vm.currentChar = prevWord.typed.length - 1;
+                    prevWord.status = 'pending';
+                    prevWord.typed = prevWord.typed.slice(0, -1);
+                }
             }
             event.preventDefault();
             return;
@@ -149,7 +158,7 @@ angular.module('typingApp', [])
             // Update visible words - remove completed words from beginning, add new ones at end
             const wordsToShow = 10; // How many words ahead to keep visible
             if (vm.currentWordIndex > wordsToShow) {
-                const startIndex = vm.currentWordIndex - wordsToShow;
+                vm.visibleStartIndex = vm.currentWordIndex - wordsToShow;
                 const endIndex = Math.min(vm.currentWordIndex + vm.visibleWordCount, vm.allWords.length);
 
                 // Check if we need more words in the pool
@@ -167,7 +176,7 @@ angular.module('typingApp', [])
                     vm.totalChars += paragraphWords.length;
                 }
 
-                vm.words = vm.allWords.slice(startIndex, endIndex);
+                vm.words = vm.allWords.slice(vm.visibleStartIndex, endIndex);
             }
 
             return;
@@ -200,9 +209,7 @@ angular.module('typingApp', [])
 
     vm.highlightCurrentChar = function(word, index) {
         // Calculate the actual index in allWords array
-        const wordsToShow = 10;
-        const startIndex = vm.currentWordIndex > wordsToShow ? vm.currentWordIndex - wordsToShow : 0;
-        const actualIndex = startIndex + index;
+        const actualIndex = vm.visibleStartIndex + index;
 
         if (actualIndex > vm.currentWordIndex) return $sce.trustAsHtml(word.text);
 

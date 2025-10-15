@@ -22,13 +22,13 @@ angular.module('typingApp', [])
     vm.showTeamModal = false;
     vm.teamName = '';
     vm.saveStatus = ''; // 'saving', 'success', 'error'
-    vm.duration = 30; // Fixed to 30 seconds
+    vm.duration = 60; // Fixed to 60 seconds
 
     // Google Apps Script Web App URL (loaded from config.js)
     vm.googleScriptUrl = APP_CONFIG.googleScriptUrl;
 
-    // Fixed paragraph for competition fairness
-    const fixedParagraph = "The quick brown fox jumps over the lazy dog near the riverbank where children play and birds sing their melodious songs throughout the warm sunny afternoon while gentle breezes rustle through the leaves of ancient oak trees that have stood for generations providing shade and shelter to countless creatures both great and small in this peaceful corner of the world where time seems to slow down and worries fade away into the distance like clouds drifting across an endless sky";
+    // Extended paragraph that loops infinitely
+    const fixedParagraph = "The quick brown fox jumps over the lazy dog near the riverbank where children play and birds sing their melodious songs throughout the warm sunny afternoon while gentle breezes rustle through the leaves of ancient oak trees that have stood for generations providing shade and shelter to countless creatures both great and small in this peaceful corner of the world where time seems to slow down and worries fade away into the distance like clouds drifting across an endless sky above the rolling hills and valleys where wildflowers bloom in vibrant colors painting the landscape with nature's magnificent palette as butterflies dance from petal to petal spreading joy and beauty wherever they go while mighty rivers flow steadily towards the vast ocean carrying stories of distant lands and forgotten dreams along their winding paths through forests dark and deep where mysterious creatures dwell in harmony with the rhythms of the earth and seasons change like chapters in an eternal book written by the hand of time itself revealing wisdom to those who pause to listen and observe the intricate patterns woven throughout the fabric of existence connecting all living things in an invisible web of life and energy that pulses with the heartbeat of the universe reminding us that we are part of something far greater than ourselves";
 
     vm.showTeamNamePrompt = function() {
         vm.showTeamModal = true;
@@ -55,15 +55,18 @@ angular.module('typingApp', [])
         }
 
         vm.words = [];
-        // Split fixed paragraph into words
+        // Split fixed paragraph into words and repeat it 5 times for looping
         const paragraphWords = fixedParagraph.split(' ');
-        paragraphWords.forEach(word => {
-            vm.words.push({
-                text: word,
-                typed: '',
-                status: 'pending'
+        // Repeat the paragraph multiple times to ensure infinite content
+        for (let i = 0; i < 5; i++) {
+            paragraphWords.forEach(word => {
+                vm.words.push({
+                    text: word,
+                    typed: '',
+                    status: 'pending'
+                });
             });
-        });
+        }
 
         vm.isTesting = true;
         vm.currentWordIndex = 0;
@@ -137,9 +140,19 @@ angular.module('typingApp', [])
             vm.currentWordIndex++;
             vm.currentChar = -1;
 
-            if (vm.currentWordIndex >= vm.words.length) {
-                endTest();
-                showResultsPopup();
+            // Add more words dynamically if approaching the end (infinite loop)
+            if (vm.currentWordIndex >= vm.words.length - 50) {
+                const paragraphWords = fixedParagraph.split(' ');
+                paragraphWords.forEach(word => {
+                    vm.words.push({
+                        text: word,
+                        typed: '',
+                        status: 'pending'
+                    });
+                });
+                // Update total chars count
+                paragraphWords.forEach(word => vm.totalChars += word.text.length);
+                vm.totalChars += paragraphWords.length; // spaces between words
             }
 
             return;

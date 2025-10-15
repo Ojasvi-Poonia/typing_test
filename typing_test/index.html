@@ -25,7 +25,7 @@
             <div class="words">
                 <span ng-repeat="word in tc.words track by $index"
                       ng-class="{
-                        'current': $index === tc.currentWordIndex,
+                        'current': $index === (tc.currentWordIndex - tc.visibleStartIndex),
                         'correct': word.status === 'correct',
                         'incorrect': word.status === 'incorrect'
                       }"
@@ -63,7 +63,7 @@
         <div class="final-stats">
           <p><strong>Team:</strong> {{tc.teamName}}</p>
           <p>⚡ Words Per Minute: {{tc.wpm}}</p>
-          <p>🎯 Accuracy: {{tc.accuracy}}%</p>
+          <p> Accuracy: {{tc.accuracy}}%</p>
         </div>
         <p class="thank-you-message">
           May the gods of Olympus smile upon your typing prowess, hero!

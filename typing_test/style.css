@@ -167,6 +167,7 @@ select:hover {
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    will-change: contents;
 }
 
 .words span {
@@ -174,10 +175,8 @@ select:hover {
     display: inline-block;
     color: #c9b988;
     position: relative;
-    transition: color 0.2s ease, opacity 0.3s ease, transform 0.3s ease;
     margin-right: 8px;
     vertical-align: top;
-    animation: fadeIn 0.3s ease-in;
 }
 
 @keyframes fadeIn {
